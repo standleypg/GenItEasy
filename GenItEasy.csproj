@@ -14,8 +14,8 @@
     <Description>Generates TypeScript type definitions from C# assemblies using TypeLitePlus.</Description>
     <PackageTags>typescript;GenItEasy;typeliteplus;csharp</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/standleypg/GetItEasy</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/standleypg/GetItEasy</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/standleypg/GenItEasy</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/standleypg/GenItEasy</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
