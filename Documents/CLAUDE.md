@@ -48,7 +48,7 @@ GenItEasy.CLI/Program.cs (CLI entry, exit codes 0-3)
 - **Include-by-default**: All public types in configured namespaces are exported unless filtered out
 - **Pattern matching filters**: Support prefix, suffix, and exact match for type inclusion/exclusion
 - **Nullable handling**: Detects both `Nullable<T>` value types and nullable reference types, maps to `| null` unions
-- **Two entry points**: CLI via `dotnet GenItEasy` tool or programmatic via `new TypeScriptGenerator(config, logger?).Generate()`
+- **Two entry points**: CLI via `genit` tool or programmatic via `new TypeScriptGenerator(config, logger?).Generate()`
 - **Separated concerns**: `baseDirectory` controls assembly loading path; output path resolves relative to working directory
 - **Optional logging**: `ILogger` parameter defaults to `NullLogger` when not provided
 

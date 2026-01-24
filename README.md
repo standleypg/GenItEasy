@@ -26,6 +26,7 @@ using GenItEasy.Utilities;
 
 // Load config from JSON
 var config = ConfigLoader.LoadConfig("typescriptgenconfig.json");
+config.BaseDirectory = Path.Combine(AppContext.BaseDirectory); // Important, otherwise output generated files may resolve in a wrong location
 var generator = new TypeScriptGenerator(config);
 generator.Generate();
 ```
@@ -44,10 +45,10 @@ generator.Generate();
 
 ```bash
 # Run with config file
-dotnet GenItEasy typescriptgenconfig.json
+genit typescriptgenconfig.json
 
 # Specify assembly base directory (where the DLLs are)
-dotnet GenItEasy typescriptgenconfig.json --base-directory bin/Debug/net9.0
+genit typescriptgenconfig.json --base-directory bin/Debug/net9.0
 ```
 
 ### MSBuild Integration
@@ -56,7 +57,7 @@ Add to your consumer project's `.csproj`:
 
 ```xml
 <Target Name="GenerateTypeScript" AfterTargets="Build">
-  <Exec Command="dotnet GenItEasy typescriptgenconfig.json --base-directory $(TargetDir)" />
+  <Exec Command="genit typescriptgenconfig.json --base-directory $(TargetDir)" />
 </Target>
 ```
 

@@ -112,17 +112,17 @@ generator.Generate();
 dotnet tool install GenItEasy.CLI
 
 # Run with config file
-dotnet GenItEasy typescriptgenconfig.json
+genit typescriptgenconfig.json
 
 # Specify where to find assembly DLLs
-dotnet GenItEasy typescriptgenconfig.json --base-directory bin/Debug/net9.0
+genit typescriptgenconfig.json --base-directory bin/Debug/net9.0
 ```
 
 ### MSBuild Integration
 
 ```xml
 <Target Name="GenerateTypeScript" AfterTargets="Build">
-  <Exec Command="dotnet GenItEasy typescriptgenconfig.json --base-directory $(TargetDir)" />
+  <Exec Command="genit typescriptgenconfig.json --base-directory $(TargetDir)" />
 </Target>
 ```
 
