@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="GenItEasy.csproj" />
+  <Project Path="GenItEasy.CLI\GenItEasy.CLI.csproj" />
+</Solution>

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DefaultItemExcludes>$(DefaultItemExcludes);GenItEasy.CLI\**</DefaultItemExcludes>
+
+    <PackageId>GenItEasy</PackageId>
+    <Version>0.0.1</Version>
+    <Authors>GenItEasy Contributors</Authors>
+    <Description>Generates TypeScript type definitions from C# assemblies using TypeLitePlus.</Description>
+    <PackageTags>typescript;GenItEasy;typeliteplus;csharp</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <PackageReference Include="TypeLitePlus" Version="2.1.0" />
+  </ItemGroup>
+
+</Project>
