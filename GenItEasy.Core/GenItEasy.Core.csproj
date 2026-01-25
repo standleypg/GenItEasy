@@ -8,7 +8,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DefaultItemExcludes>$(DefaultItemExcludes);GenItEasy.CLI\**</DefaultItemExcludes>
 
-    <PackageId>GenItEasy</PackageId>
+    <PackageId>GenItEasy.Core</PackageId>
     <Version>0.0.1</Version>
     <Authors>GenItEasy Contributors</Authors>
     <Description>Generates TypeScript type definitions from C# assemblies using TypeLitePlus.</Description>
@@ -17,6 +17,7 @@
     <PackageProjectUrl>https://github.com/standleypg/GenItEasy</PackageProjectUrl>
     <RepositoryUrl>https://github.com/standleypg/GenItEasy</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RootNamespace>GenItEasy</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
