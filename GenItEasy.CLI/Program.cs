@@ -49,7 +49,7 @@ catch (FileNotFoundException ex)
 {
     Console.Error.WriteLine($"ERROR: {ex.Message}");
     Console.Error.WriteLine();
-    Console.Error.WriteLine("Usage: GenItEasy.CLI [configPath]");
+    Console.Error.WriteLine("Usage: GenItEasy.Core.CLI [configPath]");
     Console.Error.WriteLine("  configPath: Optional path to typescriptgenconfig.json");
     return 1;
 }

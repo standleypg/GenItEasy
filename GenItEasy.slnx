@@ -1,4 +1,8 @@
 <Solution>
-  <Project Path="GenItEasy.csproj" />
-  <Project Path="GenItEasy.CLI\GenItEasy.CLI.csproj" />
+    <Folder Name="/Tests/">
+        <Project Path="Tests/GenItEasy.CLI.Tests/GenItEasy.CLI.Tests.csproj" />
+        <Project Path="Tests/GenItEasy.Tests/GenItEasy.Tests.csproj" />
+    </Folder>
+    <Project Path="GenItEasy.CLI\GenItEasy.CLI.csproj" />
+    <Project Path="GenItEasy.Core/GenItEasy.Core.csproj" />
 </Solution>

@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GenItEasy.csproj" />
+    <ProjectReference Include="..\GenItEasy.Core\GenItEasy.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
