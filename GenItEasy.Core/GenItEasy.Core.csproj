@@ -25,4 +25,8 @@
     <PackageReference Include="TypeLitePlus" Version="2.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
 </Project>
