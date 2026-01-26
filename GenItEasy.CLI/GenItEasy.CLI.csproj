@@ -9,7 +9,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>genit</ToolCommandName>
     <PackageId>GenItEasy.CLI</PackageId>
-    <Version>0.1.0-alpha</Version>
+    <Version>0.1.1-alpha</Version>
     <Authors>GenItEasy Contributors</Authors>
     <Description>CLI tool for generating TypeScript type definitions from C# assemblies.</Description>
   </PropertyGroup>
