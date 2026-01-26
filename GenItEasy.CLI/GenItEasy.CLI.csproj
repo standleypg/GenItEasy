@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>genit</ToolCommandName>
     <PackageId>GenItEasy.CLI</PackageId>
-    <Version>0.0.5</Version>
+    <Version>0.1.0-alpha</Version>
     <Authors>GenItEasy Contributors</Authors>
     <Description>CLI tool for generating TypeScript type definitions from C# assemblies.</Description>
   </PropertyGroup>
