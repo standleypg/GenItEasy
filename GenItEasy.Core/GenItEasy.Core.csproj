@@ -9,7 +9,7 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);GenItEasy.CLI\**</DefaultItemExcludes>
 
     <PackageId>GenItEasy.Core</PackageId>
-    <Version>0.1.0-alpha</Version>
+    <Version>0.1.1-alpha</Version>
     <Authors>GenItEasy Contributors</Authors>
     <Description>Generates TypeScript type definitions from C# assemblies using TypeLitePlus.</Description>
     <PackageTags>typescript;GenItEasy;typeliteplus;csharp</PackageTags>

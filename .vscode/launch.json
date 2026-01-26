@@ -1,0 +1,35 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug CLI (net8.0)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/GenItEasy.CLI/bin/Debug/net8.0/GenItEasy.CLI.dll",
+            "args": [
+                "G:\\personal\\apiTest\\typescriptgenconfig.json",
+                "--base-directory",
+                "G:\\personal\\apiTest\\bin\\Debug\\net9.0\\"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "stopAtEntry": false
+        },
+        {
+            "name": "Debug CLI (net9.0)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-cli",
+            "program": "${workspaceFolder}/GenItEasy.CLI/bin/Debug/net9.0/GenItEasy.CLI.dll",
+            "args": [
+                "path/to/typescriptgenconfig.json",
+                "--base-directory",
+                "path/to/your/assembly/directory"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "stopAtEntry": false
+        }
+    ]
+}
