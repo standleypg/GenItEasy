@@ -8,7 +8,7 @@ namespace GenItEasy.Discovery;
 public class TypeDiscovery(TypeScriptGenConfig config, ILogger logger)
 {
     private readonly TypeFilter _typeFilter = new(config, logger);
-    private string? _assemblyDirectory;
+    private readonly HashSet<string> _assemblyDirectories = [];
 
     public Assembly LoadAssembly(string assemblyName)
     {
@@ -30,9 +30,15 @@ public class TypeDiscovery(TypeScriptGenConfig config, ILogger logger)
         try
         {
             // Store the directory for dependency resolution
-            _assemblyDirectory = Path.GetDirectoryName(fullPath);
+            var assemblyDirectory = Path.GetDirectoryName(fullPath);
+            if (!string.IsNullOrEmpty(assemblyDirectory))
+            {
+                _assemblyDirectories.Add(assemblyDirectory);
+            }
 
             // Register handler to resolve dependencies from the assembly's directory
+            // (only register once, but it will search all directories)
+            AppDomain.CurrentDomain.AssemblyResolve -= ResolveAssemblyDependency;
             AppDomain.CurrentDomain.AssemblyResolve += ResolveAssemblyDependency;
 
             return Assembly.LoadFrom(fullPath);
@@ -46,26 +52,114 @@ public class TypeDiscovery(TypeScriptGenConfig config, ILogger logger)
 
     private Assembly? ResolveAssemblyDependency(object? sender, ResolveEventArgs args)
     {
-        if (string.IsNullOrEmpty(_assemblyDirectory))
+        if (_assemblyDirectories.Count == 0)
         {
             return null;
         }
 
         var assemblyName = new AssemblyName(args.Name).Name;
         if (string.IsNullOrEmpty(assemblyName))
-        {            
+        {
             return null;
         }
 
-        var assemblyPath = Path.Combine(_assemblyDirectory, assemblyName + ".dll");
-
-        if (File.Exists(assemblyPath))
+        // Search all known assembly directories for the dependency
+        foreach (var directory in _assemblyDirectories)
         {
-            logger.LogDebug("Resolving dependency {AssemblyName} from {Path}", assemblyName, assemblyPath);
-            return Assembly.LoadFrom(assemblyPath);
+            var assemblyPath = Path.Combine(directory, assemblyName + ".dll");
+
+            if (File.Exists(assemblyPath))
+            {
+                logger.LogDebug("Resolving dependency {AssemblyName} from {Path}", assemblyName, assemblyPath);
+                return Assembly.LoadFrom(assemblyPath);
+            }
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Loads multiple assemblies and returns them as a list.
+    /// </summary>
+    public List<Assembly> LoadAssemblies(IEnumerable<string> assemblyNames)
+    {
+        var assemblies = new List<Assembly>();
+        foreach (var assemblyName in assemblyNames)
+        {
+            var assembly = LoadAssembly(assemblyName);
+            assemblies.Add(assembly);
+        }
+        return assemblies;
+    }
+
+    /// <summary>
+    /// Discovers types from multiple assemblies with duplicate detection.
+    /// When the same type (namespace + name) appears in multiple assemblies,
+    /// the first occurrence wins and a warning is logged.
+    /// </summary>
+    public List<Type> DiscoverTypes(IEnumerable<Assembly> assemblies)
+    {
+        var discoveredTypes = new List<Type>();
+        var seenTypes = new HashSet<string>(); // Track by full type name
+
+        foreach (var assembly in assemblies)
+        {
+            var typesFromAssembly = DiscoverTypesFromAssembly(assembly);
+
+            foreach (var type in typesFromAssembly)
+            {
+                var typeKey = type.FullName ?? type.Name;
+
+                if (seenTypes.Contains(typeKey))
+                {
+                    logger.LogWarning(
+                        "Duplicate type '{TypeName}' found in assembly '{Assembly}'. Using the first occurrence.",
+                        typeKey, assembly.GetName().Name);
+                    continue;
+                }
+
+                seenTypes.Add(typeKey);
+                discoveredTypes.Add(type);
+            }
+        }
+
+        return discoveredTypes;
+    }
+
+    private List<Type> DiscoverTypesFromAssembly(Assembly assembly)
+    {
+        var discoveredTypes = new List<Type>();
+        var allTypes = GetLoadableTypes(assembly);
+
+        foreach (var nsConfig in config.Namespaces)
+        {
+            logger.LogDebug("Scanning namespace: {Namespace} in assembly: {Assembly}",
+                nsConfig.Namespace, assembly.GetName().Name);
+
+            var types = new List<Type>();
+            foreach (var t in allTypes)
+            {
+                try
+                {
+                    if (TypeFilter.IsInTargetNamespace(t, nsConfig) &&
+                        t is { IsNested: false, IsPublic: true } &&
+                        _typeFilter.IsNotStaticClass(t) &&
+                        _typeFilter.IsTypeIncluded(t, nsConfig))
+                    {
+                        types.Add(t);
+                    }
+                }
+                catch (Exception ex) when (IsAssemblyLoadException(ex))
+                {
+                    logger.LogDebug("Skipping type {Type} due to: {Message}", t.FullName ?? t.Name, ex.Message);
+                }
+            }
+
+            logger.LogDebug("Found {Count} types in namespace {Namespace}", types.Count, nsConfig.Namespace);
+            discoveredTypes.AddRange(types);
+        }
+
+        return discoveredTypes;
     }
 
     public List<Type> DiscoverTypes(Assembly assembly)

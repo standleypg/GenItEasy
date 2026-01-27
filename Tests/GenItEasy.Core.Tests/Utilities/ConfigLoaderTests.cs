@@ -1,3 +1,4 @@
+using GenItEasy.Configuration;
 using GenItEasy.Utilities;
 
 namespace GenItEasy.Core.Tests.Utilities;
@@ -81,7 +82,7 @@ public class ConfigLoaderTests : IDisposable
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => ConfigLoader.LoadConfig(configPath));
-        Assert.Contains("AssemblyName must be specified", exception.Message);
+        Assert.Contains("Either 'assemblyName' or 'assemblies' must be specified in configuration.", exception.Message);
     }
 
     [Fact]
@@ -102,7 +103,7 @@ public class ConfigLoaderTests : IDisposable
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => ConfigLoader.LoadConfig(configPath));
-        Assert.Contains("AssemblyName must be specified", exception.Message);
+        Assert.Contains("Either 'assemblyName' or 'assemblies' must be specified in configuration.", exception.Message);
     }
 
     [Fact]
@@ -300,5 +301,223 @@ public class ConfigLoaderTests : IDisposable
         Assert.NotNull(ns.ExcludeTypes);
         Assert.Single(ns.ExcludeTypes);
         Assert.True(ns.IncludeNested);
+    }
+
+    [Fact]
+    public void LoadConfig_WithAssembliesArray_ParsesSuccessfully()
+    {
+        // Arrange
+        var json = """
+        {
+            "assemblies": ["ProjectA", "ProjectB", "ProjectC"],
+            "outputPath": "./output",
+            "outputFileName": "types.ts",
+            "namespaces": [
+                { "namespace": "ProjectA.Models" },
+                { "namespace": "ProjectB.Shared" }
+            ]
+        }
+        """;
+        var configPath = CreateTempConfigFile(json);
+
+        // Act
+        var config = ConfigLoader.LoadConfig(configPath);
+
+        // Assert
+        Assert.NotNull(config);
+        Assert.Null(config.AssemblyName);
+        Assert.NotNull(config.Assemblies);
+        Assert.Equal(3, config.Assemblies.Count);
+        Assert.Equal("ProjectA", config.Assemblies[0]);
+        Assert.Equal("ProjectB", config.Assemblies[1]);
+        Assert.Equal("ProjectC", config.Assemblies[2]);
+    }
+
+    [Fact]
+    public void LoadConfig_WithBothAssemblyNameAndAssemblies_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var json = """
+        {
+            "assemblyName": "Test.dll",
+            "assemblies": ["ProjectA", "ProjectB"],
+            "outputPath": "./output",
+            "outputFileName": "types.ts",
+            "namespaces": [
+                { "namespace": "Test.Models" }
+            ]
+        }
+        """;
+        var configPath = CreateTempConfigFile(json);
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => ConfigLoader.LoadConfig(configPath));
+        Assert.Contains("Cannot specify both 'assemblyName' and 'assemblies'", exception.Message);
+    }
+
+    [Fact]
+    public void LoadConfig_WithNeitherAssemblyNameNorAssemblies_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var json = """
+        {
+            "outputPath": "./output",
+            "outputFileName": "types.ts",
+            "namespaces": [
+                { "namespace": "Test.Models" }
+            ]
+        }
+        """;
+        var configPath = CreateTempConfigFile(json);
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => ConfigLoader.LoadConfig(configPath));
+        Assert.Contains("Either 'assemblyName' or 'assemblies' must be specified", exception.Message);
+    }
+
+    [Fact]
+    public void LoadConfig_WithEmptyAssembliesArray_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var json = """
+        {
+            "assemblies": [],
+            "outputPath": "./output",
+            "outputFileName": "types.ts",
+            "namespaces": [
+                { "namespace": "Test.Models" }
+            ]
+        }
+        """;
+        var configPath = CreateTempConfigFile(json);
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => ConfigLoader.LoadConfig(configPath));
+        Assert.Contains("Either 'assemblyName' or 'assemblies' must be specified", exception.Message);
+    }
+
+    [Fact]
+    public void LoadConfig_WithEmptyStringInAssembliesArray_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var json = """
+        {
+            "assemblies": ["ProjectA", "", "ProjectC"],
+            "outputPath": "./output",
+            "outputFileName": "types.ts",
+            "namespaces": [
+                { "namespace": "Test.Models" }
+            ]
+        }
+        """;
+        var configPath = CreateTempConfigFile(json);
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => ConfigLoader.LoadConfig(configPath));
+        Assert.Contains("Assembly name in 'assemblies' array cannot be empty", exception.Message);
+    }
+
+    [Fact]
+    public void LoadConfig_WithWhitespaceInAssembliesArray_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var json = """
+        {
+            "assemblies": ["ProjectA", "   ", "ProjectC"],
+            "outputPath": "./output",
+            "outputFileName": "types.ts",
+            "namespaces": [
+                { "namespace": "Test.Models" }
+            ]
+        }
+        """;
+        var configPath = CreateTempConfigFile(json);
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => ConfigLoader.LoadConfig(configPath));
+        Assert.Contains("Assembly name in 'assemblies' array cannot be empty", exception.Message);
+    }
+
+    [Fact]
+    public void GetAssemblyNames_WithAssemblyName_ReturnsSingleItemList()
+    {
+        // Arrange
+        var config = new TypeScriptGenConfig
+        {
+            AssemblyName = "MyApp.Models",
+            OutputPath = "./output",
+            OutputFileName = "types.ts",
+            Namespaces = [new NamespaceConfig { Namespace = "MyApp.Models" }]
+        };
+
+        // Act
+        var result = ConfigLoader.GetAssemblyNames(config);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal("MyApp.Models", result[0]);
+    }
+
+    [Fact]
+    public void GetAssemblyNames_WithAssemblies_ReturnsFullList()
+    {
+        // Arrange
+        var config = new TypeScriptGenConfig
+        {
+            Assemblies = ["ProjectA", "ProjectB", "ProjectC"],
+            OutputPath = "./output",
+            OutputFileName = "types.ts",
+            Namespaces = [new NamespaceConfig { Namespace = "ProjectA.Models" }]
+        };
+
+        // Act
+        var result = ConfigLoader.GetAssemblyNames(config);
+
+        // Assert
+        Assert.Equal(3, result.Count);
+        Assert.Equal("ProjectA", result[0]);
+        Assert.Equal("ProjectB", result[1]);
+        Assert.Equal("ProjectC", result[2]);
+    }
+
+    [Fact]
+    public void GetAssemblyNames_WithBothAssemblyNameAndAssemblies_PrefersAssemblies()
+    {
+        // Arrange - This scenario shouldn't happen in practice due to validation,
+        // but GetAssemblyNames should prefer assemblies if both are present
+        var config = new TypeScriptGenConfig
+        {
+            AssemblyName = "SingleAssembly",
+            Assemblies = ["ProjectA", "ProjectB"],
+            OutputPath = "./output",
+            OutputFileName = "types.ts",
+            Namespaces = [new NamespaceConfig { Namespace = "Test" }]
+        };
+
+        // Act
+        var result = ConfigLoader.GetAssemblyNames(config);
+
+        // Assert
+        Assert.Equal(2, result.Count);
+        Assert.Equal("ProjectA", result[0]);
+        Assert.Equal("ProjectB", result[1]);
+    }
+
+    [Fact]
+    public void GetAssemblyNames_WithNeitherSet_ReturnsEmptyList()
+    {
+        // Arrange
+        var config = new TypeScriptGenConfig
+        {
+            OutputPath = "./output",
+            OutputFileName = "types.ts",
+            Namespaces = [new NamespaceConfig { Namespace = "Test" }]
+        };
+
+        // Act
+        var result = ConfigLoader.GetAssemblyNames(config);
+
+        // Assert
+        Assert.Empty(result);
     }
 }
