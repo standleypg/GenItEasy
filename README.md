@@ -7,7 +7,7 @@ A .NET library and CLI tool for generating TypeScript type definitions from C# a
 ### As a Library
 
 ```bash
-dotnet add package GenItEasy
+dotnet add package GenItEasy.Core
 ```
 
 ### As a CLI Tool
