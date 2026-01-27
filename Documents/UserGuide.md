@@ -1,6 +1,6 @@
 # TypeScript Generator
 
-A robust C# utility for generating TypeScript type definitions from C# classes using TypeLite.
+A robust C# utility for generating TypeScript type definitions from C# classes.
 
 ##  Design Philosophy
 
@@ -33,6 +33,8 @@ Create a `typescriptgenconfig.json` file:
   "assemblyName": "RetailPortal.Model",
   "outputPath": "ClientApp/src/types",
   "outputFileName": "models.gen.ts",
+  "outputNamespace": "MyApp",
+  "enumStyle": "Numeric",
   "baseDirectory": null,
   "namespaces": [
     {
@@ -51,6 +53,8 @@ Create a `typescriptgenconfig.json` file:
 | `assemblyName` | string | Yes | -               | Name of the assembly to load (e.g., "MyApp.Models") |
 | `outputPath` | string | Yes | -               | Output directory (relative or absolute) |
 | `outputFileName` | string | Yes | "models.gen.ts" | Name of the generated TypeScript file |
+| `outputNamespace` | string | No | null            | Custom output namespace. If set, all types are merged into this single namespace with simple type references |
+| `enumStyle` | string | No | "Numeric"       | Enum generation style: "Numeric", "String", or "StringLiteral" |
 | `baseDirectory` | string | No | null            | Directory to find the assembly DLL (defaults to current working directory; overridden by `--base-directory` CLI flag) |
 | `includeStaticClasses` | boolean | No | false           | Include static classes in output (excluded by default) |
 | `namespaces` | array | Yes | -               | List of namespace configurations |
@@ -131,8 +135,8 @@ genit typescriptgenconfig.json --base-directory bin/Debug/net9.0
 1. **Loads Configuration**: Reads and validates the JSON configuration file
 2. **Loads Assembly**: Dynamically loads the specified .NET assembly
 3. **Discovers Types**: Scans configured namespaces for all public types (excluding specified patterns)
-4. **Builds Model**: Creates a TypeLite model from discovered types
-5. **Generates Code**: Applies formatters and generates TypeScript code
+4. **Builds Model**: Creates a TypeScript model (TsModel) from discovered types using TsModelBuilder
+5. **Generates Code**: TsGenerator applies formatters and generates TypeScript code
 6. **Post-Processes**: Cleans up generated code (removes empty declarations, etc.)
 7. **Writes Output**: Saves the final TypeScript to the specified location
 
@@ -287,9 +291,13 @@ This will include types from:
 | `bool?` | `boolean \| null` | Nullable boolean |
 | `string` | `string` | |
 | `string?` | `string \| null` | Nullable reference type (C# 8.0+) |
-| Enums | `enum` | |
+| `(int, string)` | `[number, string]` | Tuple types |
+| `List<T>` | `T[]` | Collections become arrays |
+| `Dictionary<K, V>` | `{ [key: K]: V }` | Index signature |
+| Enums | `enum` or `type` | Depends on `enumStyle` config |
 | `MyEnum?` | `MyEnum \| null` | Nullable enum |
 | Classes | `interface` | With `I` prefix |
+| Generic classes | `interface<T>` | Type parameters preserved |
 
 ## Filter Patterns Explained
 
@@ -605,11 +613,48 @@ Note: Static classes (like `StringHelper`, `Constants`) are already excluded by 
 
 This includes everything by default, then excludes only what you don't want - clean and simple!
 
+## Enum Style Options
+
+The `enumStyle` configuration option controls how C# enums are generated in TypeScript:
+
+### Numeric (Default)
+```json
+{ "enumStyle": "Numeric" }
+```
+```typescript
+export enum UserRole {
+    Admin = 0,
+    User = 1,
+    Guest = 2
+}
+```
+
+### String
+```json
+{ "enumStyle": "String" }
+```
+```typescript
+export enum UserRole {
+    Admin = "Admin",
+    User = "User",
+    Guest = "Guest"
+}
+```
+
+### StringLiteral
+```json
+{ "enumStyle": "StringLiteral" }
+```
+```typescript
+export type UserRole = "Admin" | "User" | "Guest";
+```
+
+String literal types are useful when you want a simpler union type instead of a full enum.
+
 ## Dependencies
 
-- **TypeLitePlus** 2.1.0: TypeScript generation engine
 - **Microsoft.Extensions.Logging.Abstractions** 9.0.0: Optional logging interface
-- **.NET 9.0**: Target framework
+- **.NET 8.0, 9.0, 10.0**: Target frameworks (multi-targeting)
 
 ## Troubleshooting
 

@@ -1,5 +1,5 @@
+using GenItEasy.TypeScript.Models;
 using Microsoft.Extensions.Logging;
-using TypeLitePlus.TsModels;
 
 namespace GenItEasy.Formatters;
 
@@ -14,7 +14,7 @@ public class TypeFormatter(ILogger logger)
     public string FormatMemberType(TsProperty formatter, string typeName)
     {
         string baseType = GetBaseType(typeName);
-        bool isNullable = this.IsNullable(formatter);
+        bool isNullable = IsNullable(formatter);
 
         // Add | null for nullable types
         if (isNullable)

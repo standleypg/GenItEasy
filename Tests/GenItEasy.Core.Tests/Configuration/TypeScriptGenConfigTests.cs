@@ -14,7 +14,7 @@ public class TypeScriptGenConfigTests
         // Assert
         Assert.Equal(string.Empty, config.AssemblyName);
         Assert.Equal(string.Empty, config.OutputPath);
-        Assert.Equal("models.ts", config.OutputFileName);
+        Assert.Equal("models.gen.ts", config.OutputFileName);
         Assert.Null(config.BaseDirectory);
         Assert.False(config.IncludeStaticClasses);
         Assert.NotNull(config.Namespaces);

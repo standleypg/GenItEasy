@@ -11,11 +11,6 @@ public static class TypeVisibilityFormatter
     public static bool IsTypeVisible(string typeName)
     {
         // Hide Guid in all its variations
-        if (typeName.Contains("Guid", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        return true;
+        return !typeName.Contains("Guid", StringComparison.OrdinalIgnoreCase);
     }
 }

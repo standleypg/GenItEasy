@@ -160,7 +160,7 @@ public class ProgramTests : IDisposable
         var configPath = CreateTempConfigFile(json);
 
         // Act - Pass --base-directory argument
-        var exitCode = RunCli($"--base-directory", _tempDir, configPath);
+        var exitCode = RunCli("--base-directory", _tempDir, configPath);
 
         // Assert - Should parse args and fail on assembly load (exit code 2)
         Assert.Equal(2, exitCode);
@@ -185,7 +185,7 @@ public class ProgramTests : IDisposable
         var startInfo = new ProcessStartInfo
         {
             FileName = "dotnet",
-            Arguments = $"run --project \"{GetCliProjectPath()}\" -- {string.Join(" ", args.Select(a => $"\"{a}\""))}",
+            Arguments = $"run --project \"{GetCliProjectPath()}\" --framework net9.0 -- {string.Join(" ", args.Select(a => $"\"{a}\""))}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,

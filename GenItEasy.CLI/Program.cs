@@ -1,3 +1,4 @@
+using System.Text.Json;
 using GenItEasy;
 using GenItEasy.Utilities;
 using Microsoft.Extensions.Logging;
@@ -43,7 +44,7 @@ try
 
     Console.WriteLine();
     Console.WriteLine("TypeScript generation completed successfully!");
-    return 0;
+    Environment.ExitCode = 0;
 }
 catch (FileNotFoundException ex)
 {
@@ -51,17 +52,22 @@ catch (FileNotFoundException ex)
     Console.Error.WriteLine();
     Console.Error.WriteLine("Usage: GenItEasy.Core.CLI [configPath]");
     Console.Error.WriteLine("  configPath: Optional path to typescriptgenconfig.json");
-    return 1;
+    Environment.ExitCode = 1;
 }
 catch (InvalidOperationException ex)
 {
     Console.Error.WriteLine($"CONFIGURATION ERROR: {ex.Message}");
-    return 2;
+    Environment.ExitCode = 2;
+}
+catch (JsonException ex)
+{
+    Console.Error.WriteLine($"JSON PARSE ERROR: {ex.Message}");
+    Environment.ExitCode = 3;
 }
 catch (Exception ex)
 {
     Console.Error.WriteLine($"UNEXPECTED ERROR: {ex.Message}");
     Console.Error.WriteLine();
     Console.Error.WriteLine(ex.StackTrace);
-    return 3;
+    Environment.ExitCode = 3;
 }

@@ -1,6 +1,6 @@
 using GenItEasy.Formatters;
-using TypeLitePlus;
-using TypeLitePlus.TsModels;
+using GenItEasy.TypeScript;
+using GenItEasy.TypeScript.Models;
 
 namespace GenItEasy.Core.Tests.Formatters;
 
@@ -56,7 +56,7 @@ public class IdentifierFormatterTests
     {
         // Arrange
         var model = new TsModelBuilder();
-        model.Add<SimpleUser>();
+        model.Add(typeof(SimpleUser));
         var tsModel = model.Build();
 
         // Find the module and class
@@ -77,7 +77,7 @@ public class IdentifierFormatterTests
     {
         // Arrange
         var model = new TsModelBuilder();
-        model.Add<ITestInterface>();
+        model.Add(typeof(ITestInterface));
         var tsModel = model.Build();
 
         var module = tsModel.Modules.First();
@@ -96,7 +96,7 @@ public class IdentifierFormatterTests
     {
         // Arrange
         var model = new TsModelBuilder();
-        model.Add<TestEnum>();
+        model.Add(typeof(TestEnum));
         var tsModel = model.Build();
 
         var module = tsModel.Modules.First();
@@ -116,7 +116,7 @@ public class IdentifierFormatterTests
     {
         // Arrange
         var model = new TsModelBuilder();
-        model.Add<SimpleUser>();
+        model.Add(typeof(SimpleUser));
         var tsModel = model.Build();
 
         var module = tsModel.Modules.First();
@@ -124,6 +124,96 @@ public class IdentifierFormatterTests
 
         // Act
         var result = IdentifierFormatter.FormatModuleName(module);
+
+        // Assert
+        Assert.Equal(expectedModuleName, result);
+    }
+
+    [Fact]
+    public void FormatModuleName_AddsIPrefixToTypesStartingWithIFollowedByLowercase()
+    {
+        // Arrange - IntegralTest starts with 'I' but 'n' is lowercase, so it needs 'I' prefix
+        var model = new TsModelBuilder();
+        model.Add(typeof(IntegralTest));
+        var tsModel = model.Build();
+
+        var module = tsModel.Modules.First();
+        var tsClass = module.Classes.First();
+
+        // Act
+        IdentifierFormatter.FormatModuleName(module);
+
+        // Assert - Should add I prefix because 'I' is not followed by uppercase
+        Assert.Equal("IIntegralTest", tsClass.Name);
+    }
+
+    [Fact]
+    public void FormatModuleName_DoesNotAddPrefixToTypesWithInterfaceNamingConvention()
+    {
+        // Arrange - IUserService starts with 'I' followed by uppercase 'U'
+        var model = new TsModelBuilder();
+        model.Add(typeof(IUserService));
+        var tsModel = model.Build();
+
+        var module = tsModel.Modules.First();
+        var tsClass = module.Classes.First();
+
+        // Act
+        IdentifierFormatter.FormatModuleName(module);
+
+        // Assert - Should NOT add another I prefix
+        Assert.Equal("IUserService", tsClass.Name);
+        Assert.DoesNotContain("IIUserService", tsClass.Name);
+    }
+
+    [Fact]
+    public void FormatModuleName_WithOutputNamespace_ReturnsCustomNamespace()
+    {
+        // Arrange
+        var model = new TsModelBuilder();
+        model.Add(typeof(SimpleUser));
+        var tsModel = model.Build();
+
+        var module = tsModel.Modules.First();
+
+        // Act
+        var result = IdentifierFormatter.FormatModuleName(module, "CustomNamespace");
+
+        // Assert
+        Assert.Equal("CustomNamespace", result);
+    }
+
+    [Fact]
+    public void FormatModuleName_WithNullOutputNamespace_ReturnsOriginalModuleName()
+    {
+        // Arrange
+        var model = new TsModelBuilder();
+        model.Add(typeof(SimpleUser));
+        var tsModel = model.Build();
+
+        var module = tsModel.Modules.First();
+        var expectedModuleName = module.Name;
+
+        // Act
+        var result = IdentifierFormatter.FormatModuleName(module, null);
+
+        // Assert
+        Assert.Equal(expectedModuleName, result);
+    }
+
+    [Fact]
+    public void FormatModuleName_WithEmptyOutputNamespace_ReturnsOriginalModuleName()
+    {
+        // Arrange
+        var model = new TsModelBuilder();
+        model.Add(typeof(SimpleUser));
+        var tsModel = model.Build();
+
+        var module = tsModel.Modules.First();
+        var expectedModuleName = module.Name;
+
+        // Act
+        var result = IdentifierFormatter.FormatModuleName(module, "");
 
         // Assert
         Assert.Equal(expectedModuleName, result);
@@ -165,6 +255,18 @@ public class IdentifierFormatterTests
     {
         Value1,
         Value2
+    }
+
+    // Type that starts with 'I' but is NOT an interface-prefixed name
+    private class IntegralTest
+    {
+        public int Value { get; set; }
+    }
+
+    // Type that follows interface naming convention (I + uppercase)
+    private interface IUserService
+    {
+        int Id { get; set; }
     }
 
     #endregion

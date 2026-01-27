@@ -2,10 +2,11 @@
 using GenItEasy.Discovery;
 using GenItEasy.Formatters;
 using GenItEasy.Processing;
+using GenItEasy.TypeScript;
+using GenItEasy.TypeScript.Models;
 using GenItEasy.Utilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using TypeLitePlus;
 
 namespace GenItEasy;
 
@@ -52,7 +53,7 @@ public class TypeScriptGenerator(TypeScriptGenConfig config, ILogger<TypeScriptG
     /// </summary>
     private TsModel BuildTypeScriptModel(List<Type> types)
     {
-        var modelBuilder = new TsModelBuilder();
+        TsModelBuilder? modelBuilder = new();
 
         foreach (var type in types)
         {
@@ -80,13 +81,15 @@ public class TypeScriptGenerator(TypeScriptGenConfig config, ILogger<TypeScriptG
     /// </summary>
     private TsGenerator ConfigureGenerator()
     {
-        // Disable const enums for better TypeScript compatibility
-        var generator = new TsGenerator { GenerateConstEnums = false };
+        var generator = new TsGenerator
+        {
+            EnumStyle = _config.EnumStyle
+        };
 
         // Set up formatters
         generator.SetIdentifierFormatter(IdentifierFormatter.FormatPropertyName);
-        generator.SetMemberTypeFormatter((prop, typeName) => _typeFormatter.FormatMemberType(prop, typeName));
-        generator.SetModuleNameFormatter(IdentifierFormatter.FormatModuleName);
+        generator.SetMemberTypeFormatter(_typeFormatter.FormatMemberType);
+        generator.SetModuleNameFormatter(module => IdentifierFormatter.FormatModuleName(module, _config.OutputNamespace));
         generator.SetTypeVisibilityFormatter((_, typeName) => TypeVisibilityFormatter.IsTypeVisible(typeName));
 
         return generator;

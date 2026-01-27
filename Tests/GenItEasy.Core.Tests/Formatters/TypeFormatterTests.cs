@@ -1,7 +1,7 @@
 using GenItEasy.Formatters;
+using GenItEasy.TypeScript.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using TypeLitePlus.TsModels;
 
 namespace GenItEasy.Core.Tests.Formatters;
 
