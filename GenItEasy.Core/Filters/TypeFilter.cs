@@ -15,7 +15,9 @@ public class TypeFilter(TypeScriptGenConfig config, ILogger logger)
     public static bool IsInTargetNamespace(Type type, NamespaceConfig nsConfig)
     {
         if (string.IsNullOrEmpty(type.Namespace))
+        {
             return false;
+        }
 
         if (nsConfig.IncludeNested)
         {
@@ -35,7 +37,9 @@ public class TypeFilter(TypeScriptGenConfig config, ILogger logger)
     {
         // If config allows static classes, don't filter them out
         if (config.IncludeStaticClasses)
+        {
             return true;
+        }
 
         // A static class in C# is abstract and sealed
         var isStaticClass = type.IsAbstract && type.IsSealed;
@@ -56,7 +60,7 @@ public class TypeFilter(TypeScriptGenConfig config, ILogger logger)
     public bool IsTypeIncluded(Type type, NamespaceConfig nsConfig)
     {
         // Step 1: Apply includeTypes filter (if specified)
-        if (nsConfig.IncludeTypes != null && nsConfig.IncludeTypes.Count > 0)
+        if (nsConfig.IncludeTypes is { Count: > 0 })
         {
             if (!MatchesAnyPattern(type.Name, nsConfig.IncludeTypes))
             {
@@ -66,7 +70,7 @@ public class TypeFilter(TypeScriptGenConfig config, ILogger logger)
         }
 
         // Step 2: Apply excludeTypes filter
-        if (nsConfig.ExcludeTypes != null && nsConfig.ExcludeTypes.Count > 0)
+        if (nsConfig.ExcludeTypes is { Count: > 0 })
         {
             if (MatchesAnyPattern(type.Name, nsConfig.ExcludeTypes))
             {
@@ -81,7 +85,7 @@ public class TypeFilter(TypeScriptGenConfig config, ILogger logger)
             var genericBaseName = GetGenericBaseName(type);
 
             // Apply includeGenericTypes filter (if specified)
-            if (nsConfig.IncludeGenericTypes != null && nsConfig.IncludeGenericTypes.Count > 0)
+            if (nsConfig.IncludeGenericTypes is { Count: > 0 })
             {
                 if (!MatchesAnyPattern(genericBaseName, nsConfig.IncludeGenericTypes))
                 {

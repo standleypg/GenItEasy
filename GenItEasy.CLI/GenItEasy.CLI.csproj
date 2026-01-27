@@ -12,6 +12,10 @@
     <Version>0.1.1-alpha</Version>
     <Authors>GenItEasy Contributors</Authors>
     <Description>CLI tool for generating TypeScript type definitions from C# assemblies.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/standleypg/GenItEasy</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/standleypg/GenItEasy</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +24,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

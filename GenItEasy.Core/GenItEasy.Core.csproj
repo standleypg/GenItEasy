@@ -11,8 +11,8 @@
     <PackageId>GenItEasy.Core</PackageId>
     <Version>0.1.1-alpha</Version>
     <Authors>GenItEasy Contributors</Authors>
-    <Description>Generates TypeScript type definitions from C# assemblies using TypeLitePlus.</Description>
-    <PackageTags>typescript;GenItEasy;typeliteplus;csharp</PackageTags>
+    <Description>Generates TypeScript type definitions from C# assemblies.</Description>
+    <PackageTags>typescript;GenItEasy;csharp</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/standleypg/GenItEasy</PackageProjectUrl>
     <RepositoryUrl>https://github.com/standleypg/GenItEasy</RepositoryUrl>
@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
-    <PackageReference Include="TypeLitePlus" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup>

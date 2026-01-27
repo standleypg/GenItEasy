@@ -5,7 +5,7 @@
 ```
 GenItEasy/
 ├── Configuration/           # Configuration models
-│   └── TypeScriptGenConfig.cs
+│   └── TypeScriptGenConfig.cs  # Config with EnumStyle enum
 │
 ├── Discovery/              # Type discovery from assemblies
 │   └── TypeDiscovery.cs   # Loads assemblies and finds types
@@ -20,6 +20,19 @@ GenItEasy/
 │
 ├── Processing/            # Post-processing
 │   └── CodePostProcessor.cs # Cleanup generated code
+│
+├── TypeScript/            # Internal TypeScript generation engine
+│   ├── Models/
+│   │   ├── ITsType.cs           # Common interface for types
+│   │   ├── TsProperty.cs        # Property wrapper
+│   │   ├── TsClass.cs           # Class/interface model
+│   │   ├── TsEnum.cs            # Enum model
+│   │   ├── TsEnumValue.cs       # Enum member
+│   │   ├── TsModule.cs          # Namespace container
+│   │   ├── TsModel.cs           # Root model
+│   │   └── TsGeneratorOutput.cs # Output flags
+│   ├── TsModelBuilder.cs        # Builds model from C# types
+│   └── TsGenerator.cs           # Generates TypeScript code
 │
 ├── Utilities/            # Helper utilities
 │   ├── ConfigLoader.cs  # Configuration loading and validation
@@ -37,15 +50,16 @@ GenItEasy/
 - **Purpose**: Coordinates all components to generate TypeScript
 - **Responsibilities**:
     - Orchestrates the generation workflow
-    - Configures TypeLite generator with formatters
+    - Configures TsGenerator with formatters
     - Writes output files
 - **Dependencies**: All other components
 
 ### Configuration
 - **Purpose**: Configuration models
 - **Components**:
-    - `TypeScriptGenConfig`: Main configuration
+    - `TypeScriptGenConfig`: Main configuration (includes `EnumStyle` enum, `OutputNamespace`)
     - `NamespaceConfig`: Per-namespace settings
+    - `EnumStyle`: Enum for generation style (Numeric, String, StringLiteral)
 
 ### Discovery/TypeDiscovery
 - **Purpose**: Finds types in assemblies
@@ -90,6 +104,36 @@ GenItEasy/
     - Cleans up extra whitespace
     - Regex-based text cleanup
 
+### TypeScript/Models
+- **Purpose**: Internal model types for TypeScript generation
+- **Components**:
+    - `ITsType`: Common interface for TsClass and TsEnum (provides `Name` property)
+    - `TsProperty`: Wraps property info with Name and PropertyType
+    - `TsClass`: Represents a class/interface with Properties and TypeParameters
+    - `TsEnum`: Represents an enum with Values
+    - `TsEnumValue`: Enum member with Name and numeric Value
+    - `TsModule`: Namespace container with Classes and Enums
+    - `TsModel`: Root model containing Modules
+    - `TsGeneratorOutput`: Flags enum (Properties, Enums)
+
+### TypeScript/TsModelBuilder
+- **Purpose**: Builds TypeScript model from C# types
+- **Responsibilities**:
+    - Accepts types via `Add(Type)` and `Add<T>()`
+    - Scans properties and fields
+    - Extracts generic type parameters
+    - Groups types by namespace into modules
+    - Returns `TsModel` via `Build()`
+
+### TypeScript/TsGenerator
+- **Purpose**: Generates TypeScript code from model
+- **Responsibilities**:
+    - Accepts formatter callbacks (identifier, member type, module name, visibility)
+    - Handles enum styles (Numeric, String, StringLiteral)
+    - Maps C# types to TypeScript (tuples, collections, dictionaries, primitives)
+    - Resolves cross-namespace type references
+    - Consolidates modules when `outputNamespace` is used
+
 ### Utilities/PathResolver
 - **Purpose**: Resolves output file paths
 - **Responsibilities**:
@@ -111,7 +155,7 @@ GenItEasy/
 ## Data Flow
 
 ```
-1. Load Config
+1. Load Config (ConfigLoader)
    ↓
 2. TypeDiscovery.LoadAssembly()
    ↓
@@ -120,15 +164,18 @@ GenItEasy/
    ├→ TypeFilter.IsNotStaticClass()
    └→ TypeFilter.IsTypeIncluded()
    ↓
-4. BuildTypeScriptModel()
+4. TsModelBuilder.Add(types) + Build()
+   └→ Creates TsModel with TsModules, TsClasses, TsEnums
    ↓
-5. ConfigureGenerator()
-   ├→ IdentifierFormatter
-   ├→ TypeFormatter
-   ├→ IdentifierFormatter (module)
-   └→ TypeVisibilityFormatter
+5. ConfigureTsGenerator()
+   ├→ SetIdentifierFormatter (IdentifierFormatter)
+   ├→ SetMemberTypeFormatter (TypeFormatter)
+   ├→ SetModuleNameFormatter (IdentifierFormatter)
+   └→ SetTypeVisibilityFormatter (TypeVisibilityFormatter)
    ↓
-6. Generate TypeScript
+6. TsGenerator.Generate(model, output)
+   ├→ Apply EnumStyle (Numeric/String/StringLiteral)
+   └→ Handle namespace consolidation (outputNamespace)
    ↓
 7. CodePostProcessor.Process()
    ↓

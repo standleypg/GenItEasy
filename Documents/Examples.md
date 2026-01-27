@@ -113,6 +113,8 @@ interface IProductDto {
 | `List<T>` | `T[]` |
 | `Dictionary<string, T>` | `{ [key: string]: T }` |
 | `T[]` | `T[]` |
+| `(T1, T2)` | `[T1, T2]` |
+| `(T1, T2, T3)` | `[T1, T2, T3]` |
 
 ---
 
@@ -200,7 +202,40 @@ type UserListResponse = IPagedResponse<IUserDto>;
 
 ---
 
-## Example 5: Enums
+## Example 5: Tuples
+
+### C# Input
+```csharp
+public class CoordinateDto
+{
+    public (double Latitude, double Longitude) Location { get; set; }
+    public (int X, int Y, int Z) Position3D { get; set; }
+    public List<(string Key, int Value)> Pairs { get; set; }
+    public (int Id, (string First, string Last) Name) PersonInfo { get; set; }
+}
+```
+
+### TypeScript Output
+```typescript
+interface ICoordinateDto {
+    location: [number, number];                    // Simple tuple
+    position3D: [number, number, number];          // 3-element tuple
+    pairs: [string, number][];                     // Array of tuples
+    personInfo: [number, [string, string]];        // Nested tuple
+}
+```
+
+### Key Points
+- C# tuples (`ValueTuple<T1, T2, ...>`) are mapped to TypeScript tuple types `[T1, T2, ...]`
+- Tuple element names from C# are not preserved (TypeScript tuples are positional)
+- Nested tuples are fully supported
+- Collections of tuples become arrays of tuple types
+
+---
+
+## Example 6: Enums with Different Styles
+
+The `enumStyle` configuration option controls how enums are generated.
 
 ### C# Input
 ```csharp
@@ -213,7 +248,60 @@ public enum OrderStatus
     Cancelled = 4,
     Refunded = 5
 }
+```
 
+### TypeScript Output - Numeric Style (Default)
+```json
+{ "enumStyle": "Numeric" }
+```
+```typescript
+export enum OrderStatus {
+    Pending = 0,
+    Processing = 1,
+    Shipped = 2,
+    Delivered = 3,
+    Cancelled = 4,
+    Refunded = 5
+}
+```
+
+### TypeScript Output - String Style
+```json
+{ "enumStyle": "String" }
+```
+```typescript
+export enum OrderStatus {
+    Pending = "Pending",
+    Processing = "Processing",
+    Shipped = "Shipped",
+    Delivered = "Delivered",
+    Cancelled = "Cancelled",
+    Refunded = "Refunded"
+}
+```
+
+### TypeScript Output - String Literal Style
+```json
+{ "enumStyle": "StringLiteral" }
+```
+```typescript
+export type OrderStatus = "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled" | "Refunded";
+```
+
+### When to Use Each Style
+
+| Style | Use Case |
+|-------|----------|
+| **Numeric** | Default. Best for APIs returning numeric enum values. Supports reverse mapping (`OrderStatus[0]` → `"Pending"`). |
+| **String** | Best for APIs returning string enum values. More readable in JSON payloads. |
+| **StringLiteral** | Simplest option. No runtime overhead. Best when you only need type checking, not runtime enum features. |
+
+---
+
+## Example 7: Flags Enums
+
+### C# Input
+```csharp
 [Flags]
 public enum Permissions
 {
@@ -225,17 +313,8 @@ public enum Permissions
 }
 ```
 
-### TypeScript Output
+### TypeScript Output (Numeric)
 ```typescript
-export enum OrderStatus {
-    Pending = 0,
-    Processing = 1,
-    Shipped = 2,
-    Delivered = 3,
-    Cancelled = 4,
-    Refunded = 5
-}
-
 export enum Permissions {
     None = 0,
     Read = 1,
@@ -249,7 +328,70 @@ export enum Permissions {
 
 ---
 
-## Example 6: Real-World Usage in TypeScript
+## Example 8: Output Namespace Consolidation
+
+When using `outputNamespace`, all types from different C# namespaces are merged into a single TypeScript namespace.
+
+### Configuration
+```json
+{
+    "outputNamespace": "MyApp",
+    "namespaces": [
+        { "namespace": "Backend.Models.Users" },
+        { "namespace": "Backend.Models.Orders" }
+    ]
+}
+```
+
+### C# Input (multiple namespaces)
+```csharp
+namespace Backend.Models.Users
+{
+    public class UserDto { public Guid Id { get; set; } }
+}
+
+namespace Backend.Models.Orders
+{
+    public class OrderDto { public UserDto User { get; set; } }
+}
+```
+
+### TypeScript Output (without outputNamespace)
+```typescript
+declare namespace Backend.Models.Users {
+    interface IUserDto {
+        id: string;
+    }
+}
+
+declare namespace Backend.Models.Orders {
+    interface IOrderDto {
+        user: Backend.Models.Users.IUserDto;  // Fully qualified reference
+    }
+}
+```
+
+### TypeScript Output (with outputNamespace: "MyApp")
+```typescript
+declare namespace MyApp {
+    interface IUserDto {
+        id: string;
+    }
+
+    interface IOrderDto {
+        user: IUserDto;  // Simple reference (same namespace)
+    }
+}
+```
+
+### Benefits of outputNamespace
+- Cleaner generated code with shorter type references
+- Simpler imports in consuming TypeScript code
+- Useful when C# namespace structure doesn't need to be preserved
+
+---
+
+## Example 9: Real-World Usage in TypeScript
 
 ### API Service
 ```typescript

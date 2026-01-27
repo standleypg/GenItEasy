@@ -47,11 +47,15 @@ public class TypeDiscovery(TypeScriptGenConfig config, ILogger logger)
     private Assembly? ResolveAssemblyDependency(object? sender, ResolveEventArgs args)
     {
         if (string.IsNullOrEmpty(_assemblyDirectory))
+        {
             return null;
+        }
 
         var assemblyName = new AssemblyName(args.Name).Name;
         if (string.IsNullOrEmpty(assemblyName))
+        {            
             return null;
+        }
 
         var assemblyPath = Path.Combine(_assemblyDirectory, assemblyName + ".dll");
 

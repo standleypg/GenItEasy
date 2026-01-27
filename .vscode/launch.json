@@ -8,9 +8,9 @@
             "preLaunchTask": "build-cli",
             "program": "${workspaceFolder}/GenItEasy.CLI/bin/Debug/net8.0/GenItEasy.CLI.dll",
             "args": [
-                "G:\\personal\\apiTest\\typescriptgenconfig.json",
+                "path-to-typescriptgenconfig.json",
                 "--base-directory",
-                "G:\\personal\\apiTest\\bin\\Debug\\net9.0\\"
+                "path-to-dll"
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
@@ -23,9 +23,9 @@
             "preLaunchTask": "build-cli",
             "program": "${workspaceFolder}/GenItEasy.CLI/bin/Debug/net9.0/GenItEasy.CLI.dll",
             "args": [
-                "path/to/typescriptgenconfig.json",
+                "path-to-typescriptgenconfig.json",
                 "--base-directory",
-                "path/to/your/assembly/directory"
+                "path-to-dll"
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
