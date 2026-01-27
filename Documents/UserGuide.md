@@ -28,6 +28,7 @@ A robust C# utility for generating TypeScript type definitions from C# classes.
 
 Create a `typescriptgenconfig.json` file:
 
+**Single Assembly (standard usage):**
 ```json
 {
   "assemblyName": "RetailPortal.Model",
@@ -46,16 +47,31 @@ Create a `typescriptgenconfig.json` file:
 }
 ```
 
+**Multiple Assemblies:**
+```json
+{
+  "assemblies": ["ProjectA.Models", "ProjectB.Shared", "ProjectC.Core"],
+  "outputPath": "ClientApp/src/types",
+  "outputFileName": "models.gen.ts",
+  "namespaces": [
+    { "namespace": "ProjectA.Models.Dtos" },
+    { "namespace": "ProjectB.Shared.Models" },
+    { "namespace": "ProjectC.Core.Entities" }
+  ]
+}
+```
+
 ### Configuration Options
 
 | Property | Type | Required | Default         | Description |
 |----------|------|----------|-----------------|-------------|
-| `assemblyName` | string | Yes | -               | Name of the assembly to load (e.g., "MyApp.Models") |
+| `assemblyName` | string | No* | -               | Name of a single assembly to load (e.g., "MyApp.Models"). *Either `assemblyName` or `assemblies` is required. |
+| `assemblies` | array | No* | -               | List of assembly names to load (e.g., ["ProjectA", "ProjectB"]). *Either `assemblyName` or `assemblies` is required. Cannot be used together with `assemblyName`. |
 | `outputPath` | string | Yes | -               | Output directory (relative or absolute) |
 | `outputFileName` | string | Yes | "models.gen.ts" | Name of the generated TypeScript file |
 | `outputNamespace` | string | No | null            | Custom output namespace. If set, all types are merged into this single namespace with simple type references |
 | `enumStyle` | string | No | "Numeric"       | Enum generation style: "Numeric", "String", or "StringLiteral" |
-| `baseDirectory` | string | No | null            | Directory to find the assembly DLL (defaults to current working directory; overridden by `--base-directory` CLI flag) |
+| `baseDirectory` | string | No | null            | Directory to find the assembly DLL(s) (defaults to current working directory; overridden by `--base-directory` CLI flag) |
 | `includeStaticClasses` | boolean | No | false           | Include static classes in output (excluded by default) |
 | `namespaces` | array | Yes | -               | List of namespace configurations |
 
@@ -273,6 +289,23 @@ This will include types from:
     {
       "namespace": "MyApp.Shared.Enums"
     }
+  ]
+}
+```
+
+### Multiple Assemblies
+When you have types spread across multiple .csproj files (e.g., shared models, domain entities in separate projects), use the `assemblies` array:
+
+```json
+{
+  "assemblies": ["MyApp.Models", "MyApp.Shared", "MyApp.Domain"],
+  "outputPath": "ClientApp/src/types",
+  "outputFileName": "all-models.gen.ts",
+  "baseDirectory": "bin/Debug/net9.0",
+  "namespaces": [
+    { "namespace": "MyApp.Models.Dtos" },
+    { "namespace": "MyApp.Shared.Common" },
+    { "namespace": "MyApp.Domain.Entities", "excludeTypes": ["Base"] }
   ]
 }
 ```
@@ -594,7 +627,14 @@ Note: Static classes (like `StringHelper`, `Constants`) are already excluded by 
 9. **Validation**: Use TypeScript's `tsc` to validate generated files
 10. **Namespace Organization**: Keep related types in organized namespaces
 11. **Nested Namespaces**: Use `includeNested: true` when you have a logical folder structure
-12. **Multiple Assemblies**: Create separate config files for different assemblies if needed
+12. **Multiple Assemblies**: Use `assemblies` array when types span multiple projects; all assemblies must be in the same `baseDirectory`
+
+### Multi-Assembly Considerations
+
+When using multiple assemblies:
+- **Duplicate Types**: If the same type (same namespace + name) appears in multiple assemblies, the first occurrence is used and a warning is logged
+- **Different Namespaces**: Types with the same name but different namespaces are both included (no conflict)
+- **All assemblies must be in the same directory**: All DLLs must be accessible from `baseDirectory`
 
 ### Configuration Pattern
 

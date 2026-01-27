@@ -24,8 +24,12 @@ public class TypeScriptGenerator(TypeScriptGenConfig config, ILogger<TypeScriptG
         {
             _logger.LogInformation("Starting TypeScript generation...");
 
-            var assembly = _typeDiscovery.LoadAssembly(_config.AssemblyName);
-            var types = _typeDiscovery.DiscoverTypes(assembly);
+            var assemblyNames = ConfigLoader.GetAssemblyNames(_config);
+            _logger.LogInformation("Loading {Count} assembly(ies): {Assemblies}",
+                assemblyNames.Count, string.Join(", ", assemblyNames));
+
+            var assemblies = _typeDiscovery.LoadAssemblies(assemblyNames);
+            var types = _typeDiscovery.DiscoverTypes(assemblies);
 
             if (types.Count == 0)
             {

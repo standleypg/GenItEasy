@@ -27,7 +27,10 @@ public enum EnumStyle
 public class TypeScriptGenConfig
 {
     [JsonPropertyName("assemblyName")]
-    public string AssemblyName { get; set; } = string.Empty;
+    public string? AssemblyName { get; set; }
+
+    [JsonPropertyName("assemblies")]
+    public List<string>? Assemblies { get; set; }
 
     [JsonPropertyName("outputPath")]
     public string OutputPath { get; set; } = string.Empty;

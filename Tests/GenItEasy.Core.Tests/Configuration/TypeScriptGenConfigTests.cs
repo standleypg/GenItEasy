@@ -12,7 +12,8 @@ public class TypeScriptGenConfigTests
         var config = new TypeScriptGenConfig();
 
         // Assert
-        Assert.Equal(string.Empty, config.AssemblyName);
+        Assert.Null(config.AssemblyName);
+        Assert.Null(config.Assemblies);
         Assert.Equal(string.Empty, config.OutputPath);
         Assert.Equal("models.gen.ts", config.OutputFileName);
         Assert.Null(config.BaseDirectory);
@@ -159,5 +160,87 @@ public class NamespaceConfigTests
         Assert.NotNull(config.ExcludeTypes);
         Assert.Single(config.ExcludeTypes);
         Assert.True(config.IncludeNested);
+    }
+}
+
+public class TypeScriptGenConfigAssembliesTests
+{
+    [Fact]
+    public void TypeScriptGenConfig_CanSetAssembliesProperty()
+    {
+        // Arrange & Act
+        var config = new TypeScriptGenConfig
+        {
+            Assemblies = ["ProjectA", "ProjectB", "ProjectC"],
+            OutputPath = "./output",
+            OutputFileName = "types.ts",
+            Namespaces = [new NamespaceConfig { Namespace = "ProjectA.Models" }]
+        };
+
+        // Assert
+        Assert.Null(config.AssemblyName);
+        Assert.NotNull(config.Assemblies);
+        Assert.Equal(3, config.Assemblies.Count);
+        Assert.Equal("ProjectA", config.Assemblies[0]);
+        Assert.Equal("ProjectB", config.Assemblies[1]);
+        Assert.Equal("ProjectC", config.Assemblies[2]);
+    }
+
+    [Fact]
+    public void TypeScriptGenConfig_DeserializesAssembliesFromJson()
+    {
+        // Arrange
+        var json = """
+        {
+            "assemblies": ["MyApp.Models", "MyApp.Shared", "MyApp.Core"],
+            "outputPath": "./generated",
+            "outputFileName": "types.ts",
+            "namespaces": [
+                { "namespace": "MyApp.Models" }
+            ]
+        }
+        """;
+
+        // Act
+        var config = JsonSerializer.Deserialize<TypeScriptGenConfig>(json, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        // Assert
+        Assert.NotNull(config);
+        Assert.Null(config.AssemblyName);
+        Assert.NotNull(config.Assemblies);
+        Assert.Equal(3, config.Assemblies.Count);
+        Assert.Equal("MyApp.Models", config.Assemblies[0]);
+        Assert.Equal("MyApp.Shared", config.Assemblies[1]);
+        Assert.Equal("MyApp.Core", config.Assemblies[2]);
+    }
+
+    [Fact]
+    public void TypeScriptGenConfig_DeserializesSingleAssemblyFromJson()
+    {
+        // Arrange - backward compatibility test
+        var json = """
+        {
+            "assemblyName": "MyApp.Models",
+            "outputPath": "./generated",
+            "outputFileName": "types.ts",
+            "namespaces": [
+                { "namespace": "MyApp.Models" }
+            ]
+        }
+        """;
+
+        // Act
+        var config = JsonSerializer.Deserialize<TypeScriptGenConfig>(json, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        // Assert
+        Assert.NotNull(config);
+        Assert.Equal("MyApp.Models", config.AssemblyName);
+        Assert.Null(config.Assemblies);
     }
 }

@@ -32,10 +32,7 @@ public static class ConfigLoader
 
     private static void ValidateConfig(TypeScriptGenConfig config)
     {
-        if (string.IsNullOrWhiteSpace(config.AssemblyName))
-        {
-            throw new InvalidOperationException("AssemblyName must be specified in configuration.");
-        }
+        ValidateAssemblyConfig(config);
 
         if (string.IsNullOrWhiteSpace(config.OutputPath))
         {
@@ -59,5 +56,51 @@ public static class ConfigLoader
                 throw new InvalidOperationException("Namespace name cannot be empty.");
             }
         }
+    }
+
+    private static void ValidateAssemblyConfig(TypeScriptGenConfig config)
+    {
+        var hasAssemblyName = !string.IsNullOrWhiteSpace(config.AssemblyName);
+        var hasAssemblies = config.Assemblies is { Count: > 0 };
+
+        if (hasAssemblyName && hasAssemblies)
+        {
+            throw new InvalidOperationException(
+                "Cannot specify both 'assemblyName' and 'assemblies'. Use 'assemblyName' for a single assembly or 'assemblies' for multiple assemblies.");
+        }
+
+        if (!hasAssemblyName && !hasAssemblies)
+        {
+            throw new InvalidOperationException(
+                "Either 'assemblyName' or 'assemblies' must be specified in configuration.");
+        }
+
+        if (hasAssemblies)
+        {
+            if (config.Assemblies!.Any(string.IsNullOrWhiteSpace))
+            {
+                throw new InvalidOperationException("Assembly name in 'assemblies' array cannot be empty.");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the list of assembly names from the configuration.
+    /// Returns a single-item list for backward compatibility when assemblyName is used,
+    /// or the full list when assemblies is used.
+    /// </summary>
+    public static List<string> GetAssemblyNames(TypeScriptGenConfig config)
+    {
+        if (config.Assemblies != null && config.Assemblies.Count > 0)
+        {
+            return config.Assemblies;
+        }
+
+        if (!string.IsNullOrWhiteSpace(config.AssemblyName))
+        {
+            return [config.AssemblyName];
+        }
+
+        return [];
     }
 }
